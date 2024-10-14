@@ -1,0 +1,41 @@
+Amrit Kumar
+Email:amritkumarlive06@gmail.com LinkedIn: https://www.linkedin.com/in/amrit-kumar-3057301b8/
+Phone: +91 7979907264 GitHub: https://github.com/Amrit-star/
+Education
+•Indian Institute of Technology, Patna
+B.Tech in Chemical Engineering CPI: 7.98 July 2020 - May 2024
+•Trident Public School, Muzaffarpur
+CBSE Class XII Percentage: 93.4 % Apr 2019 - Mar 2020
+•Ramakrishna Mission Vidyapith, Purulia
+WBBSE Class X Percentage: 94 % Apr 2017 - Mar 2018
+Projects
+•Laptop Price Prediction Source Code
+◦Performed in-depth Exploratory Data Analysis to uncover patterns, correlations within the dataset and
+applied feature engineering techniques to improve overall predictive performance.
+◦Used Python libraries such as Pandas, Matplotlib and Seaborn to create insightful visualizations and
+Streamlit library for building user-friendly interface.
+◦Implemented Linear Regression, Decision Tree and Random Forest algorithms for the prediction
+of laptop’s price, achieving a accuracy of 89 percent.
+•Movie Explorer Web Application Source Code
+◦Fully responsive web application that displays trending, popular, and top-rated Movies and TV Shows by
+fetching data in real-time from TMDB’s API.
+◦Detail page provides information about the title, genre, cast, rating, trailer video, release date, and similar
+movies.
+◦Implemented features like searching, sorting, infinite scrolling, and lazy loading.
+◦Technologies used: HTML, SCSS, JavaScript, ReactJS
+•Doctor Appointment Booking MERN Stack Application Source Code
+◦Login and registration page and separate User Interfaces for Users, Admins, and Doctors.
+◦Users can book appointment with registered doctors and Admin can manage users, doctors, and
+appointments.
+◦Technologies used: HTML, Bootstrap, React, NodeJS, MongoDB
+Skills/Relevant coursework
+•Programming Languages: C++, Python, JavaScript
+•IT-Constructs: Data Structures and Algorithms, DBMS, OOPs, Operating System
+•Technologies: HTML, CSS, Bootstrap, JavaScript, ReactJS, SQL, NodeJS, MongoDB
+•Key Courses: Programming and Data Structures (CS102), Introduction to Data Science (CS244), Python
+Programming (CS384), The Complete Web Development Bootcamp (Udemy)
+Accomplishments
+•solved more than 500DSA problems on Leetcode .
+•Institute rank 100thout of 2100 registered candidates on GeeksforGeeks .
+•Secured267thrank in Starters 108 division 3 on Codechef .
+•Secured100/100 marks in Mathematics and Science in Class X board exam.
