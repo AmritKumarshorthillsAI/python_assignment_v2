@@ -157,7 +157,7 @@ class TestSQLStorage(unittest.TestCase):
 
 class TestCombinations(unittest.TestCase):
     def test_pdf_combinations(self):
-        loader = PDFLoader()
+        loader = PDFExtractor()
         combinations = [
             ("extract_text", loader.extract_text, ("Text", {})),
             ("extract_links", loader.extract_links, [{"url": "http://example.com"}]),
@@ -170,7 +170,7 @@ class TestCombinations(unittest.TestCase):
             self.assertEqual(output, result)
 
     def test_docx_combinations(self):
-        loader = DOCXLoader()
+        loader = DOCXExtractor()
         combinations = [
             ("extract_text", loader.extract_text, ("Text", {})),
             ("extract_links", loader.extract_links, [{"url": "http://docxlink.com"}]),
@@ -183,7 +183,7 @@ class TestCombinations(unittest.TestCase):
             self.assertEqual(output, result)
 
     def test_ppt_combinations(self):
-        loader = PPTLoader()
+        loader = PPTXExtractor()
         combinations = [
             ("extract_text", loader.extract_text, ("Text", {})),
             ("extract_links", loader.extract_links, [{"url": "http://pptlink.com"}]),
