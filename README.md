@@ -1,4 +1,7 @@
 # Python Assignment
+
+![image](https://github.com/user-attachments/assets/b4a9a821-9924-44e1-8ced-5806ac5f9344)
+
  
 ## Overview
 The `data_extractor` directory houses a set of tools specifically designed to extract data from various file formats and efficiently store the resulting information.
