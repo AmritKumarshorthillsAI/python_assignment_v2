@@ -1,5 +1,4 @@
 *.pyc
-__pycache__
 venv/
 data_extractor/__pycache__
 file_loaders/__pycache__
