@@ -1,16 +1,11 @@
 import os
 from PyPDF2 import PdfReader
+# The PdfReader class from the PyPDF2 library is used to read PDF files in Python. It allows you to extract 
+# information from PDF documents, such as text, metadata, and more.
 from file_loaders.file_loader import FileLoader
 
 class PDFLoader(FileLoader):
-    # def __init__(self, file_path):
-    #     """
-    #     Initialize a PDFLoader.
-
-    #     :param file_path: The path to the PDF file to be loaded.
-    #     """
-    #     super().__init__(file_path)
-    #     self.file = None
+    
 
     def validate_file(self, file_path: str) -> bool:
         return file_path.lower().endswith('.pdf')
@@ -20,13 +15,4 @@ class PDFLoader(FileLoader):
             raise ValueError("Invalid PDF file.")
         return PdfReader(file_path)
 
-    # def close_file(self):
-    #     """
-    #     Close the PDF file.
-
-    #     This method closes the file after it has been loaded.
-
-    #     :return: None
-    #     """
-    #     if self.file:
-    #         self.file.close()
+    
