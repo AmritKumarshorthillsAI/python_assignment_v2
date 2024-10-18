@@ -22,7 +22,7 @@ def main():
     Returns:
         None
     """
-    file_path = "/home/shtlp_0070/Documents/python_assignment_v2/files/Resume_for_SDE_role.pdf"  # Change this to the file you want to process
+    file_path = "/home/shtlp_0070/Documents/python_assignment_v2/files/sample.pdf"  # Change this to the file you want to process
 
     # Determine the file type and use the appropriate loader
     if file_path.endswith(".pdf"):
@@ -75,7 +75,7 @@ def main():
     print(f"Extracted data saved to: {output_dir}")
     
     # Create an instance of SQLStorage
-    sql_storage = SQLStorage()
+    sql_storage = SQLStorage("assignment4.db")
 
     # Store the extracted text in the SQL database
     sql_storage.store("text", extracted_text)

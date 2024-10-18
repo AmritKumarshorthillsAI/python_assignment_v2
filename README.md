@@ -89,7 +89,7 @@ python3 main.py
 ```
 ## After running the main.py you will see extracted files in extracted data folder
 
-# How to check data stored in sqlite the code
+# How to check data stored in sqlite
 ```bash
 sqlite3 assignment4.db
 .tables  - will list down tables in database

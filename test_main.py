@@ -1,252 +1,462 @@
-import unittest
-from unittest.mock import MagicMock
-from data_extractor.docx_extractor import DOCXExtractor
-from data_extractor.pdf_extractor import PDFExtractor
-from data_extractor.pptx_extractor import PPTXExtractor
-from file_loaders.pdf_loader import PDFLoader
+
+from sqlite3 import Error
+from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
+import pytest
+ 
+ 
+
 from file_loaders.docx_loader import DOCXLoader
+from file_loaders.pdf_loader import PDFLoader
 from file_loaders.ppt_loader import PPTLoader
-from storage.file_storage import FileStorage
 from storage.sql_storage import SQLStorage
+from data_extractor.docx_extractor import DOCXExtractor
+from data_extractor.pptx_extractor import PPTXExtractor
+ 
+@pytest.fixture
+def docx_loader():
+    return DOCXLoader()
+ 
+ 
+ 
+ 
+ 
+def test_validate_file_no_extension(docx_loader):
+    no_extension_path = "test_files/docx/no_extension"
+    with pytest.raises(ValueError, match="Invalid DOCX file."):
+        docx_loader.load_file(no_extension_path)
+ 
+ 
+ 
+ 
+ 
+def test_validate_uppercase_docx_extension(docx_loader):
+    uppercase_docx_path = "test_files/docx/UPPERCASE.DOCX"
+    assert docx_loader.validate_file(uppercase_docx_path), "Failed to validate .DOCX with uppercase extension"
+ 
+ 
+def test_validate_mixed_case_docx_extension(docx_loader):
+    mixed_case_docx_path = "test_files/docx/mixedCase.DoCx"
+    assert docx_loader.validate_file(mixed_case_docx_path), "Failed to validate .DoCx file"
+ 
+ 
+def test_validate_file_with_spaces(docx_loader):
+    file_with_spaces_path = "test_files/docx/file with spaces.docx"
+    assert docx_loader.validate_file(file_with_spaces_path), "Failed to validate .docx file with spaces in the name"
+ 
+ 
+def test_validate_file_with_special_characters(docx_loader):
+    special_characters_path = "test_files/docx/special_#@!.docx"
+    assert docx_loader.validate_file(special_characters_path), "Failed to validate .docx file with special characters"
+ 
+ 
+def test_validate_empty_string_path(docx_loader):
+    empty_string_path = ""
+    with pytest.raises(ValueError, match="Invalid DOCX file."):
+        docx_loader.load_file(empty_string_path)
+ 
+ 
+def test_validate_file_with_long_name(docx_loader):
+    long_name_path = "test_files/docx/" + "a" * 255 + ".docx"
+    assert docx_loader.validate_file(long_name_path), "Failed to validate .docx file with a long name"
+ 
+ 
+def test_validate_file_with_multiple_dots(docx_loader):
+    multiple_dots_path = "test_files/docx/multiple.dots.file.docx"
+    assert docx_loader.validate_file(multiple_dots_path), "Failed to validate .docx file with multiple dots in the name"
+ 
+ 
+def test_validate_invalid_docx_extension(docx_loader):
+    invalid_extension_path = "test_files/docx/invalid.docxx"
+    with pytest.raises(ValueError, match="Invalid DOCX file."):
+        docx_loader.load_file(invalid_extension_path)
+ 
+ 
+ 
+def test_validate_incorrect_extension_valid_content(docx_loader):
+    incorrect_extension_path = "test_files/docx/valid_content_wrong_extension.pdf"
+    with pytest.raises(ValueError, match="Invalid DOCX file."):
+        docx_loader.load_file(incorrect_extension_path)
+ 
+ 
+ 
+ 
+def test_validate_deeply_nested_file(docx_loader):
+    deeply_nested_path = "test_files/docx/nested_folder/subfolder/deepfile.docx"
+    assert docx_loader.validate_file(deeply_nested_path), "Failed to validate .docx file in a deeply nested folder"
+ 
+ 
+ 
+ 
+ 
+ 
+@pytest.fixture
+def pdf_loader():
+    return PDFLoader()
+ 
+ 
+def test_validate_valid_pdf_file(pdf_loader):
+    valid_pdf_path = "test_files/pdf/valid_file.pdf"
+    assert pdf_loader.validate_file(valid_pdf_path), "Failed to validate a valid PDF file."
+ 
+ 
+def test_validate_pdf_file_with_spaces(pdf_loader):
+    pdf_with_spaces_path = "test_files/pdf/file with spaces.pdf"
+    assert pdf_loader.validate_file(pdf_with_spaces_path), "Failed to validate PDF file with spaces in the name."
+ 
+ 
+ 
+def test_validate_empty_string_path(pdf_loader):
+    empty_string_path = ""
+    with pytest.raises(ValueError, match="Invalid PDF file."):
+        pdf_loader.load_file(empty_string_path)
+ 
+ 
+def test_validate_pdf_file_with_long_name(pdf_loader):
+    long_name_path = "test_files/pdf/" + "a" * 255 + ".pdf"
+    assert pdf_loader.validate_file(long_name_path), "Failed to validate PDF file with a long name."
+ 
+ 
+ 
+ 
+def test_validate_pdf_file_with_multiple_dots(pdf_loader):
+    multiple_dots_path = "test_files/pdf/multiple.dots.file.pdf"
+    assert pdf_loader.validate_file(multiple_dots_path), "Failed to validate PDF file with multiple dots in the name."
+ 
+ 
+ 
+def test_validate_hidden_pdf_file(pdf_loader):
+    hidden_file_path = "test_files/pdf/.hidden_file.pdf"
+    assert pdf_loader.validate_file(hidden_file_path), "Failed to validate hidden PDF file."
+ 
+ 
+ 
+def test_validate_invalid_pdf_extension(pdf_loader):
+    invalid_extension_path = "test_files/pdf/invalid.pdfx"
+    with pytest.raises(ValueError, match="Invalid PDF file."):
+        pdf_loader.load_file(invalid_extension_path)
+ 
+ 
+ 
+def test_validate_incorrect_extension_valid_content(pdf_loader):
+    incorrect_extension_path = "test_files/pdf/valid_content_wrong_extension.txt"
+    with pytest.raises(ValueError, match="Invalid PDF file."):
+        pdf_loader.load_file(incorrect_extension_path)
+ 
+ 
+ 
+@pytest.fixture
+def ppt_loader():
+    return PPTLoader()
+ 
+ 
+ 
+ 
+def test_validate_valid_pptx_file(ppt_loader):
+    valid_pptx_path = "test_files/ppt/valid_file.pptx"
+    assert ppt_loader.validate_file(valid_pptx_path), "Failed to validate a valid PPTX file."
+ 
+ 
+ 
+def test_validate_valid_ppt_file(ppt_loader):
+    valid_ppt_path = "test_files/ppt/valid_file.ppt"
+    assert ppt_loader.validate_file(valid_ppt_path), "Failed to validate a valid PPT file."
+ 
+ 
+def test_validate_ppt_file_with_spaces(ppt_loader):
+    ppt_with_spaces_path = "test_files/ppt/file with spaces.pptx"
+    assert ppt_loader.validate_file(ppt_with_spaces_path), "Failed to validate PPTX file with spaces in the name."
+ 
+ 
+def test_validate_ppt_file_with_special_characters(ppt_loader):
+    special_characters_path = "test_files/ppt/special_#@!.pptx"
+    assert ppt_loader.validate_file(special_characters_path), "Failed to validate PPTX file with special characters."
+ 
+ 
+def test_validate_empty_string_path(ppt_loader):
+    empty_string_path = ""
+    with pytest.raises(ValueError, match="Invalid PPT file."):
+        ppt_loader.load_file(empty_string_path)
+ 
+def test_validate_ppt_file_with_long_name(ppt_loader):
+    long_name_path = "test_files/ppt/" + "a" * 255 + ".pptx"
+    assert ppt_loader.validate_file(long_name_path), "Failed to validate PPTX file with a long name."
+ 
+def test_validate_ppt_file_with_multiple_dots(ppt_loader):
+    multiple_dots_path = "test_files/ppt/multiple.dots.file.pptx"
+    assert ppt_loader.validate_file(multiple_dots_path), "Failed to validate PPTX file with multiple dots in the name."
+ 
+ 
+ 
+def test_validate_hidden_ppt_file(ppt_loader):
+    hidden_file_path = "test_files/ppt/.hidden_file.pptx"
+    assert ppt_loader.validate_file(hidden_file_path), "Failed to validate hidden PPTX file."
+ 
+ 
+def test_validate_invalid_ppt_extension(ppt_loader):
+    invalid_extension_path = "test_files/ppt/invalid.pptx_invalid"
+    with pytest.raises(ValueError, match="Invalid PPT file."):
+        ppt_loader.load_file(invalid_extension_path)
+ 
+ 
+ 
+ 
+@pytest.fixture
+def ppt_loader():
+    return PPTLoader()
+ 
+@pytest.fixture
+def pptx_extractor(ppt_loader):
+    return PPTXExtractor(ppt_loader)
+ 
+def test_load_valid_pptx(pptx_extractor):
+    file_path = "test_files/pptx/empty.pptx"  # Adjust path to a valid PPTX file
+    pptx_extractor.load(file_path)
+    assert pptx_extractor.file is not None, "Failed to load PPTX file."
+ 
+ 
+@pytest.fixture
+def mock_loader():
+    """Mock the PPTLoader."""
+    return MagicMock()
+ 
+@pytest.fixture
+def pptx_extractor(mock_loader):
+    """Create a PPTXExtractor with the mocked loader."""
+    return PPTXExtractor(mock_loader)
+ 
+ 
+def test_load_valid_pptx(pptx_extractor, mock_loader):
+    """Test loading a valid PPTX file."""
+    mock_loader.load_file.return_value = MagicMock()  # Mock a presentation object
+    pptx_extractor.load("fake_path.pptx")
+ 
+def test_load_valid_pptx(pptx_extractor, mock_loader):
+    """Test loading a valid PPTX file."""
+    mock_loader.load_file.return_value = MagicMock()  # Mock a presentation object
+    pptx_extractor.load("fake_path.pptx")
+    
+    assert pptx_extractor.file is not None, "Failed to load PPTX file."
+ 
+def test_extract_text(pptx_extractor, mock_loader):
+    """Test text extraction from PPTX."""
+    # Mock the loaded PPTX with slides and shapes
+    mock_slide = MagicMock()
+    mock_shape = MagicMock()
+    mock_shape.text = "Sample text"
+    mock_slide.shapes = [mock_shape]
+    mock_loader.load_file.return_value.slides = [mock_slide]
+ 
+    pptx_extractor.load("fake_path.pptx")
+    text = pptx_extractor.extract_text()
+    
+    assert text == "Sample text\n", "Text extraction did not return expected result."
+ 
+ 
+ 
+ 
+def test_extract_images(pptx_extractor, mock_loader):
+    """Test image extraction from PPTX."""
+    # Mock the loaded PPTX with images
+    mock_slide = MagicMock()
+    mock_shape = MagicMock()
+    mock_shape.shape_type = 13  # Indicates a picture shape
+    mock_shape.image.blob = b'image_data'
+    mock_shape.image.ext = 'png'
+    mock_slide.shapes = [mock_shape]
+    mock_loader.load_file.return_value.slides = [mock_slide]
+ 
+    pptx_extractor.load("fake_path.pptx")
+    images = pptx_extractor.extract_images()
+    
+    assert len(images) == 1, "No images extracted from PPTX file."
+    assert images[0]["image_data"] == b'image_data', "Extracted image data does not match."
+    assert images[0]["ext"] == 'png', "Extracted image extension does not match."
+ 
+def test_extract_urls(pptx_extractor, mock_loader):
+    """Test URL extraction from PPTX."""
+    # Mock the loaded PPTX with links
+    mock_slide = MagicMock()
+    mock_shape = MagicMock()
+    mock_paragraph = MagicMock()
+    mock_run = MagicMock()
+    mock_run.text = "Click here"
+    mock_run.hyperlink.address = "http://example.com"
+    mock_paragraph.runs = [mock_run]
+    mock_shape.text_frame = MagicMock()
+    mock_shape.text_frame.paragraphs = [mock_paragraph]
+    mock_slide.shapes = [mock_shape]
+    mock_loader.load_file.return_value.slides = [mock_slide]
+ 
+    pptx_extractor.load("fake_path.pptx")
+    urls = pptx_extractor.extract_urls()
+ 
+    assert len(urls) == 1, "No URLs extracted from PPTX file."
+    assert urls[0]["linked_text"] == "Click here", "Linked text does not match."
+    assert urls[0]["url"] == "http://example.com", "URL does not match."
+    assert urls[0]["page_number"] == 1, "Page number does not match."
+ 
+def test_extract_tables(pptx_extractor, mock_loader):
+    """Test table extraction from PPTX."""
+    # Mock the loaded PPTX with tables
+    mock_slide = MagicMock()
+    mock_shape = MagicMock()
+    mock_shape.has_table = True
+    mock_shape.table.rows = [
+        MagicMock(cells=[MagicMock(text_frame=MagicMock(text='Cell 1')),
+                         MagicMock(text_frame=MagicMock(text='Cell 2'))]),
+        MagicMock(cells=[MagicMock(text_frame=MagicMock(text='Cell 3')),
+                         MagicMock(text_frame=MagicMock(text='Cell 4'))])
+    ]
+    mock_slide.shapes = [mock_shape]
+    mock_loader.load_file.return_value.slides = [mock_slide]
+ 
+    pptx_extractor.load("fake_path.pptx")
+    tables = pptx_extractor.extract_tables()
+ 
+    assert len(tables) == 1, "No tables extracted from PPTX file."
+    assert tables[0] == [['Cell 1', 'Cell 2'], ['Cell 3', 'Cell 4']], "Table content does not match."
+ 
+ 
+ 
 
-
-class TestPDFLoader(unittest.TestCase):
-    def setUp(self):
-        self.pdf_loader = PDFLoader()  # Correct initialization
-        self.pdf_loader.load_file = MagicMock()
-
-    def test_load_file(self):
-        self.pdf_loader.load_file()
-        self.pdf_loader.load_file.assert_called_once()
-
-    def test_extract_text(self):
-        self.pdf_loader.extract_text = MagicMock(return_value=("Sample text", {"font_style": "Arial", "page_number": 1}))
-        text, metadata = self.pdf_loader.extract_text()
-        self.assertEqual(text, "Sample text")
-        self.assertEqual(metadata, {"font_style": "Arial", "page_number": 1})
-
-    def test_extract_links(self):
-        self.pdf_loader.extract_urls = MagicMock(return_value=[{"text": "Example", "url": "http://example.com", "page_number": 1}])
-        links = self.pdf_loader.extract_urls()
-        self.assertEqual(links[0]["url"], "http://example.com")
-
-    def test_extract_images(self):
-        self.pdf_loader.extract_images = MagicMock(return_value=[{"resolution": (1024, 768), "format": "JPEG", "page_number": 1}])
-        images = self.pdf_loader.extract_images()
-        self.assertEqual(images[0]["format"], "JPEG")
-
-    def test_extract_tables(self):
-        self.pdf_loader.extract_tables = MagicMock(return_value=[{"dimensions": (5, 3), "page_number": 1}])
-        tables = self.pdf_loader.extract_tables()
-        self.assertEqual(tables[0]["dimensions"], (5, 3))
-
-
-class TestDOCXLoader(unittest.TestCase):
-    def setUp(self):
-        self.docx_loader = DOCXLoader()  # Correct initialization
-        self.docx_loader.load_file = MagicMock()
-
-    def test_load_file(self):
-        self.docx_loader.load_file()
-        self.docx_loader.load_file.assert_called_once()
-
-    def test_extract_text(self):
-        self.docx_loader.extract_text = MagicMock(return_value=("Sample DOCX text", {"font_style": "Times New Roman"}))
-        text, metadata = self.docx_loader.extract_text()
-        self.assertEqual(text, "Sample DOCX text")
-        self.assertEqual(metadata["font_style"], "Times New Roman")
-
-    def test_extract_links(self):
-        self.docx_loader.extract_urls = MagicMock(return_value=[{"text": "Docx link", "url": "http://docx.com"}])
-        links = self.docx_loader.extract_urls()
-        self.assertEqual(links[0]["text"], "Docx link")
-
-    def test_extract_images(self):
-        self.docx_loader.extract_images = MagicMock(return_value=[{"resolution": (800, 600), "format": "PNG"}])
-        images = self.docx_loader.extract_images()
-        self.assertEqual(images[0]["format"], "PNG")
-
-    def test_extract_tables(self):
-        self.docx_loader.extract_tables = MagicMock(return_value=[{"dimensions": (2, 4)}])
-        tables = self.docx_loader.extract_tables()
-        self.assertEqual(tables[0]["dimensions"], (2, 4))
-
-
-class TestPPTLoader(unittest.TestCase):
-    def setUp(self):
-        self.ppt_loader = PPTLoader()  # Correct initialization
-        self.ppt_loader.load_file = MagicMock()
-
-    def test_load_file(self):
-        self.ppt_loader.load_file()
-        self.ppt_loader.load_file.assert_called_once()
-
-    def test_extract_text(self):
-        self.ppt_loader.extract_text = MagicMock(return_value=("Slide text", {"slide_number": 1}))
-        text, metadata = self.ppt_loader.extract_text()
-        self.assertEqual(text, "Slide text")
-        self.assertEqual(metadata["slide_number"], 1)
-
-    def test_extract_links(self):
-        self.ppt_loader.extract_urls = MagicMock(return_value=[{"text": "PPT Link", "url": "http://pptlink.com"}])
-        links = self.ppt_loader.extract_urls()
-        self.assertEqual(links[0]["url"], "http://pptlink.com")
-
-    def test_extract_images(self):
-        self.ppt_loader.extract_images = MagicMock(return_value=[{"resolution": (1280, 720), "format": "JPEG"}])
-        images = self.ppt_loader.extract_images()
-        self.assertEqual(images[0]["resolution"], (1280, 720))
-
-    def test_extract_tables(self):
-        self.ppt_loader.extract_tables = MagicMock(return_value=[{"dimensions": (3, 5)}])
-        tables = self.ppt_loader.extract_tables()
-        self.assertEqual(tables[0]["dimensions"], (3, 5))
-
-
-class TestFileStorage(unittest.TestCase):
-    def setUp(self):
-        self.extractor = MagicMock()
-        self.file_storage = FileStorage(self.extractor)
-
-    def test_store_text(self):
-        self.file_storage.store_text = MagicMock()
-        self.file_storage.store_text()
-        self.file_storage.store_text.assert_called_once()
-
-    def test_store_links(self):
-        self.file_storage.store_urls = MagicMock()
-        self.file_storage.store_urls()
-        self.file_storage.store_urls.assert_called_once()
-
-    def test_store_images(self):
-        self.file_storage.store_images = MagicMock()
-        self.file_storage.store_images()
-        self.file_storage.store_images.assert_called_once()
-
-    def test_store_tables(self):
-        self.file_storage.store_tables = MagicMock()
-        self.file_storage.store_tables()
-        self.file_storage.store_tables.assert_called_once()
-
-
-class TestSQLStorage(unittest.TestCase):
-    def setUp(self):
-        # SQLStorage may not need the extractor as a parameter
-        self.sql_storage = SQLStorage()  # Correct initialization, no extractor needed
-
-    def test_store_text(self):
-        self.sql_storage.store_text = MagicMock()
-        self.sql_storage.store_text()
-        self.sql_storage.store_text.assert_called_once()
-
-    def test_store_links(self):
-        self.sql_storage.store_urls = MagicMock()
-        self.sql_storage.store_urls()
-        self.sql_storage.store_urls.assert_called_once()
-
-    def test_store_images(self):
-        self.sql_storage.store_images = MagicMock()
-        self.sql_storage.store_images()
-        self.sql_storage.store_images.assert_called_once()
-
-    def test_store_tables(self):
-        self.sql_storage.store_tables = MagicMock()
-        self.sql_storage.store_tables()
-        self.sql_storage.store_tables.assert_called_once()
-
-
-class TestCombinations(unittest.TestCase):
-    def setUp(self):
-        # Create a mock loader for PDF
-        self.mock_loader = MagicMock()
-        self.pdf_loader = PDFExtractor(self.mock_loader)
-
-        # Mock behavior for the loader's load_file method
-        self.mock_pdf_file = MagicMock()
-        self.mock_loader.load_file.return_value = self.mock_pdf_file
-
-        # Mock pages in the PDF
-        self.mock_page_1 = MagicMock()
-        self.mock_page_2 = MagicMock()
-        self.mock_pdf_file.pages = [self.mock_page_1, self.mock_page_2]
-
-    def test_pdf_combinations(self):
-        # Mock extract_text for the PDF
-        self.mock_page_1.extract_text.return_value = "Sample text from page 1"
-        self.mock_page_2.extract_text.return_value = "Sample text from page 2"
-
-        # Mock image extraction
-        self.mock_loader.load_file.return_value.extract_images.return_value = [
-            {"image_data": b'fake_image_data', "ext": "JPEG", "page": 1, "dimensions": (100, 100)}
-        ]
-
-        # Mock URL extraction
-        self.mock_page_1.__getitem__.return_value = {'/Annots': [MagicMock()]}
-        self.mock_page_1.__getitem__.return_value['/Annots'][0].get_object.return_value = {'/A': {'/URI': 'http://example.com'}}
-
-        # Mock table extraction
-        self.mock_loader.load_file.return_value.extract_tables.return_value = [[["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]]
-
-        # Define combinations for PDF testing
-        combinations = [
-            ("extract_text", self.pdf_loader.extract_text, "Sample text from page 1Sample text from page 2"),
-            ("extract_links", self.pdf_loader.extract_urls, [{"linked_text": "http://example.com", "url": "http://example.com", "page_number": 1}]),
-            ("extract_images", self.pdf_loader.extract_images, [{"image_data": b'fake_image_data', "ext": "JPEG", "page": 1, "dimensions": (100, 100)}]),
-            ("extract_tables", self.pdf_loader.extract_tables, [[["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]]),
-        ]
-
-        # Run tests for each combination
-        for name, method, expected_result in combinations:
-            with self.subTest(name=name):
-                output = method()
-                self.assertEqual(output, expected_result)
-
-    def test_docx_combinations(self):
-        # Create a mock loader for DOCX
-        self.mock_docx_loader = MagicMock()
-        self.docx_loader = DOCXExtractor(self.mock_docx_loader)
-
-        # Mock behavior for the loader's load_file method
-        self.mock_docx_file = MagicMock()
-        self.mock_docx_loader.load_file.return_value = self.mock_docx_file
-
-        # Define combinations for DOCX testing
-        combinations = [
-            ("extract_text", self.docx_loader.extract_text, "Sample DOCX text"),
-            ("extract_links", self.docx_loader.extract_urls, [{"url": "http://docxlink.com"}]),
-            ("extract_images", self.docx_loader.extract_images, [{"format": "PNG"}]),
-            ("extract_tables", self.docx_loader.extract_tables, [[["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]]),
-        ]
-
-        # Run tests for each combination
-        for name, method, expected_result in combinations:
-            with self.subTest(name=name):
-                output = method()
-                self.assertEqual(output, expected_result)
-
-    def test_ppt_combinations(self):
-        # Create a mock loader for PPTX
-        self.mock_ppt_loader = MagicMock()
-        self.ppt_loader = PPTXExtractor(self.mock_ppt_loader)
-
-        # Mock behavior for the loader's load_file method
-        self.mock_ppt_file = MagicMock()
-        self.mock_ppt_loader.load_file.return_value = self.mock_ppt_file
-
-        # Define combinations for PPTX testing
-        combinations = [
-            ("extract_text", self.ppt_loader.extract_text, "Sample PPTX text"),
-            ("extract_links", self.ppt_loader.extract_urls, [{"url": "http://pptlink.com"}]),
-            ("extract_images", self.ppt_loader.extract_images, [{"format": "JPEG"}]),
-            ("extract_tables", self.ppt_loader.extract_tables, [[["Header1", "Header2"], ["Row1Col1", "Row1Col2"]]]),
-        ]
-
-        # Run tests for each combination
-        for name, method, expected_result in combinations:
-            with self.subTest(name=name):
-                output = method()
-                self.assertEqual(output, expected_result)
-
-
-if __name__ == "__main__":
-    unittest.main()
+ 
+@pytest.fixture
+def mock_connection():
+    """Create a mock SQLite connection."""
+    return MagicMock()
+ 
+ 
+ 
+@pytest.fixture
+def sql_storage(mock_connection):
+    """Create an instance of SQLStorage with a mocked connection."""
+    with patch('sqlite3.connect', return_value=mock_connection):
+        storage = SQLStorage(connection_string="mock_connection_string")
+        yield storage
+ 
+ 
+ 
+ 
+def test_store_inserts_data(sql_storage, mock_connection):
+    """Test if the store method inserts data into the table."""
+    sql_storage.store("TestTable", {"key": "value"})
+ 
+    # Verify that the data was inserted into the table
+    escaped_table_name = '"TestTable"'
+    mock_connection.cursor().execute.assert_any_call(
+        f"INSERT INTO {escaped_table_name} (data) VALUES (?)", (str({"key": "value"}),)
+    )
+ 
+ 
+def test_close_connection(sql_storage, mock_connection):
+    """Test if the close method closes the database connection."""
+    sql_storage.close()
+    mock_connection.close.assert_called_once()
+ 
+ 
+ 
+def test_store_creates_table_with_escaped_name(sql_storage, mock_connection):
+    """Test if the store method creates a table with an escaped name."""
+    sql_storage.store("Table Name With Space", {"key": "value"})
+ 
+    # Check if the table was created with the correct escaped name
+    escaped_table_name = '"Table_Name_With_Space"'
+    
+    # Assert that the CREATE TABLE statement was called
+    mock_connection.cursor().execute.assert_any_call(
+        f"""CREATE TABLE IF NOT EXISTS {escaped_table_name} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            data TEXT
+        )"""
+    )    
+ 
+ 
+ 
+def test_store_inserts_data(sql_storage, mock_connection):
+    """Test if the store method inserts data into the table."""
+    sql_storage.store("TestTable", {"key": "value"})
+ 
+    # Verify that the data was inserted into the table
+    escaped_table_name = '"TestTable"'
+    mock_connection.cursor().execute.assert_any_call(
+        f"INSERT INTO {escaped_table_name} (data) VALUES (?)", (str({"key": "value"}),)
+    )   
+ 
+ 
+ 
+def test_close_connection(sql_storage, mock_connection):
+    """Test if the close method closes the database connection."""
+    sql_storage.close()
+    mock_connection.close.assert_called_once()     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+def test_store_inserts_empty_data(sql_storage, mock_connection):
+    """Test if the store method can handle empty data."""
+    sql_storage.store("EmptyTable", {})
+    
+    # Verify that the data was inserted into the table
+    escaped_table_name = '"EmptyTable"'
+    mock_connection.cursor().execute.assert_any_call(
+        f"INSERT INTO {escaped_table_name} (data) VALUES (?)", (str({}),)
+    )
+ 
+ 
+def test_store_creates_table_with_special_characters(sql_storage, mock_connection):
+    """Test if the store method creates a table with special characters in the name."""
+    sql_storage.store("Table#With$Special%Characters", {"key": "value"})
+    
+    # Check if the table was created with the correct escaped name
+    escaped_table_name = '"Table#With$Special%Characters"'
+    mock_connection.cursor().execute.assert_any_call(
+        f"""CREATE TABLE IF NOT EXISTS {escaped_table_name} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            data TEXT
+        )"""
+    )
+ 
+ 
+ 
+ 
+def test_close_connection_is_called_after_operations(sql_storage, mock_connection):
+    """Test if the close method is called after storing data."""
+    sql_storage.store("CloseTestTable", {"key": "value"})
+    sql_storage.close()
+    
+    # Assert that the close method was called
+    mock_connection.close.assert_called_once()
+ 
+ 
+def test_store_with_table_name_in_lowercase(sql_storage, mock_connection):
+    """Test if the store method handles lowercase table names correctly."""
+    sql_storage.store("lowercase_table", {"key": "value"})
+ 
+    # Check if the table was created with the correct escaped name
+    escaped_table_name = '"lowercase_table"'
+    mock_connection.cursor().execute.assert_any_call(
+        f"""CREATE TABLE IF NOT EXISTS {escaped_table_name} (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            data TEXT
+        )"""
+    )
+ 
+ 
+def test_store_inserts_large_data(sql_storage, mock_connection):
+    """Test if the store method can handle large data."""
+    large_data = "x" * 10000  # 10,000 characters
+    sql_storage.store("LargeDataTable", {"large_key": large_data})
+ 
+    escaped_table_name = '"LargeDataTable"'
+    mock_connection.cursor().execute.assert_any_call(
+        f"INSERT INTO {escaped_table_name} (data) VALUES (?)", (str({"large_key": large_data}),)
+    )
+ 
+ 
+ 
+ 
+ 
