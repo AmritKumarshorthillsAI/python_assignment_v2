@@ -88,3 +88,11 @@ pip3 freeze > requirements.txt
 python3 main.py
 ```
 ## After running the main.py you will see extracted files in extracted data folder
+
+# How to check data stored in sqlite the code
+```bash
+sqlite3 assignment4.db
+.tables  - will list down tables in database
+select * from text;
+ctrl + D - to exit sqlite
+```
