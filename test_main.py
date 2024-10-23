@@ -2,6 +2,7 @@ from sqlite3 import Error
 from unittest.mock import MagicMock, patch
 from unittest.mock import MagicMock, patch
 import pytest
+from unittest.mock import Mock
 from pptx import Presentation
 
 from storage.sql_storage import SQLStorage
@@ -97,12 +98,6 @@ def test_extract_text_pdf_error_handling(setup_extractor):
     assert "File not found" in str(excinfo.value)
 
 
-
-
-
-
-import pytest
-from unittest.mock import MagicMock
 
 # Assuming FileExtractor and loader classes are already imported
 
@@ -216,18 +211,6 @@ def test_extract_text_with_empty_cells(file_extractor, sample_docx):
     text = file_extractor.extract_text()
     assert "Cell1\t" in text
 
-
-
-
-
-
-
-
-
-import pytest
-from unittest.mock import Mock
-
-from pptx import Presentation
 
 @pytest.fixture
 def mock_loader():
